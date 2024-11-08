@@ -145,9 +145,9 @@ class DX7Cartridge:
     def from_file(filename):
         with open(filename, 'rb') as f:
             data = f.read()
-        if len(data) != 4096:
-            raise ValueError(f"File '{filename}' is {len(data)} bytes long, but it must be 4096 bytes long")
-        return DX7Cartridge(data)
+        if len(data) < 4096:
+            raise ValueError(f"File '{filename}' is {len(data)} bytes long, but it must be at least 4096 bytes long")
+        return DX7Cartridge(data[:4096])
 
     def to_file(self, filename):
         with open(filename, 'wb') as f:
