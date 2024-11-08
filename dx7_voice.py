@@ -116,8 +116,21 @@ class DX7Voice:
         
         return bytes(data)
 
-    def to_bytes(self):
-        return self.data
+    def pretty_print(self):
+        print(f"Voice Name: {self.name}")
+        print(f"Algorithm: {self.algorithm}, Feedback: {self.feedback}, Oscillator Sync: {self.oscillator_sync}")
+        print("Operators:")
+        for i, op in enumerate(self.operators, start=1):
+            print(f"  Operator {i}:")
+            for key, value in op.items():
+                print(f"    {key}: {value}")
+        print("Pitch EG:")
+        for key, value in self.pitch_eg.items():
+            print(f"  {key}: {value}")
+        print(f"LFO Speed: {self.lfo_speed}, LFO Delay: {self.lfo_delay}, LFO Pitch Mod Depth: {self.lfo_pitch_mod_depth}")
+        print(f"LFO Amp Mod Depth: {self.lfo_amp_mod_depth}, LFO Sync: {self.lfo_sync}, LFO Waveform: {self.lfo_waveform}")
+        print(f"Pitch Mod Sensitivity: {self.pitch_mod_sensitivity}, Transpose: {self.transpose}")
+        print("-" * 40)
 
 class DX7Cartridge:
     def __init__(self, data):
