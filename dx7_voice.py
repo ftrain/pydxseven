@@ -1,6 +1,5 @@
-import struct
 import random
-import string
+import serial
 
 class DX7Voice:
     def __init__(self, data):
@@ -64,55 +63,57 @@ class DX7Voice:
         self.data = data
 
     @staticmethod
-    def random_voice():
+    def byte_construct(rnd_num, rnd_low, rnd_high, ser_port=''):
+        rnd_bytes = []
+        with serial.Serial(ser_port, 19200, timeout=1) as ser:
+            x = ser.read(rnd_num)
+            while True:
+                if len(rnd_bytes) == rnd_num:
+                    break
+                replace_bytes = 0
+                for valid_byte in range(len(x)):
+                    if rnd_high >= int(x[valid_byte]) >= rnd_low:
+                        rnd_bytes.append(int(x[valid_byte]))
+                    else:
+                        replace_bytes += 1
+                x = ser.read(replace_bytes)
+        return rnd_bytes
+
+    @staticmethod
+    def op_construct(ser_port=''):
+        op_bytes = []
+        syx1 = DX7Voice.byte_construct(13, 0, 99, ser_port)
+        for lvls in range(11):
+            op_bytes.append(syx1[lvls])
+        op_bytes.append(DX7Voice.byte_construct(1, 0, 15, ser_port)[0])
+        op_bytes.append(DX7Voice.byte_construct(1, 0, 119, ser_port)[0])
+        op_bytes.append(DX7Voice.byte_construct(1, 0, 31, ser_port)[0])
+        op_bytes.append(syx1[11])
+        op_bytes.append(DX7Voice.byte_construct(1, 0, 63, ser_port)[0])
+        op_bytes.append(syx1[12])
+        return op_bytes
+
+    @staticmethod
+    def random_voice(ser_port=''):
         data = bytearray(128)
-
-        # Define sound types with specific parameter ranges
-        sound_types = {
-            "Bass": {"algorithm": (0, 7), "feedback": (0, 3), "lfo_speed": (20, 40)},
-            "Pluck": {"algorithm": (8, 15), "feedback": (4, 7), "lfo_speed": (40, 60)},
-            "Brass": {"algorithm": (16, 23), "feedback": (2, 5), "lfo_speed": (60, 80)},
-            "Piano": {"algorithm": (24, 31), "feedback": (0, 2), "lfo_speed": (80, 99)},
-        }
-
-        # Choose a random sound type
-        sound_type = random.choice(list(sound_types.keys()))
-        params = sound_types[sound_type]
-
-        # Set operator parameters
-        for i in range(6):
-            offset = i * 17
-            for j in range(17):
-                data[offset + j] = random.randint(0, 99)
-
-        # Set pitch EG
-        for i in range(102, 110):
-            data[i] = random.randint(0, 99)
-
-        # Set other parameters based on sound type
-        data[110] = random.randint(*params["algorithm"])  # Algorithm
-        data[111] = random.randint(*params["feedback"])   # Feedback
-        data[112] = random.randint(0, 1)                  # Oscillator Sync
-        data[113] = random.randint(*params["lfo_speed"])  # LFO Speed
-        data[114] = random.randint(0, 99)                 # LFO Delay
-        data[115] = random.randint(0, 99)                 # LFO Pitch Mod Depth
-        data[116] = random.randint(0, 99)                 # LFO Amp Mod Depth
-        data[117] = random.randint(0, 1)                  # LFO Sync
-        data[118] = random.randint(0, 5)                  # LFO Waveform
-        data[119] = random.randint(0, 7)                  # Pitch Mod Sensitivity
-        data[120] = random.randint(0, 48)                 # Transpose
-
-        # Generate a random and silly name
-        words = [
-            "Fuzzy", "Bouncy", "Wobble", "Quirky", "Zappy", "Snappy", "Giggly", "Wiggly", "Jumpy", "Funky",
-            "Zany", "Whacky", "Loopy", "Zippy", "Bubbly", "Silly", "Goofy", "Dizzy", "Wacky", "Jazzy",
-            "Spunky", "Peppy", "Sparky", "Zesty", "Breezy", "Cheery", "Perky", "Chirpy", "Frisky", "Lively",
-            "Sprightly", "Vibrant", "Vivacious", "Whimsical", "Playful", "Merry", "Jolly", "Sunny", "Radiant", "Gleeful"
-        ]
-        name = " ".join(random.sample(words, random.randint(2, 3)))
-        data[121:127] = name.encode('ascii', 'ignore').ljust(6)[:6]
-
-        data[127] = 0  # Reserved byte
+        for ops in range(6):
+            current_op = DX7Voice.op_construct(ser_port)
+            for op in range(len(current_op)):
+                data[ops * 17 + op] = current_op[op]
+        syx1 = DX7Voice.byte_construct(12, 0, 99, ser_port)
+        syx2 = DX7Voice.byte_construct(3, 97, 122, ser_port)
+        patch_name = DX7Voice.byte_construct(16, 0, 255, ser_port)
+        patch_name_count = sum(patch_name)
+        patch_name = ''.join(chr(patch_name[i] % 26 + 65) for i in range(6))
+        for param in range(8):
+            data[102 + param] = syx1[param]
+        data[110] = DX7Voice.byte_construct(1, 0, 31, ser_port)[0]
+        data[111] = DX7Voice.byte_construct(1, 0, 15, ser_port)[0]
+        for param in range(8, 12):
+            data[112 + param] = syx1[param]
+        data[120] = DX7Voice.byte_construct(1, 0, 123, ser_port)[0]
+        data[121:127] = patch_name.encode('ascii', 'ignore').ljust(6)[:6]
+        data[127] = syx2[2]
         return DX7Voice(data)
     def to_bytes(self):
         data = bytearray(128)
@@ -198,8 +199,8 @@ class DX7Cartridge:
         return b''.join(voice.to_bytes() for voice in self.voices)
 
     @staticmethod
-    def random_cartridge():
-        voices = [DX7Voice.random_voice() for _ in range(32)]
+    def random_cartridge(ser_port=''):
+        voices = [DX7Voice.random_voice(ser_port) for _ in range(32)]
         return DX7Cartridge(b''.join(voice.to_bytes() for voice in voices))
 
     @staticmethod
