@@ -6,7 +6,7 @@ class DX7Voice:
     def __init__(self, data):
         # Ensure the data is 128 bytes long
         if len(data) != 128:
-            raise ValueError("Voice data must be 128 bytes long")
+            raise ValueError("Voice data must be 128 bytes long, it is actually {}".format(len(data)))
         
         # Operator parameters
         self.operators = []
