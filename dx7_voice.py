@@ -102,9 +102,10 @@ class DX7Voice:
         data[119] = random.randint(0, 7)                  # Pitch Mod Sensitivity
         data[120] = random.randint(0, 48)                 # Transpose
 
-        # Set name based on sound type
-        name = sound_type
-        data[121:127] = name.encode('ascii').ljust(6)[:6]
+        # Generate a random and silly name
+        words = ["Fuzzy", "Bouncy", "Wobble", "Quirky", "Zappy", "Snappy", "Giggly", "Wiggly", "Jumpy", "Funky"]
+        name = " ".join(random.sample(words, random.randint(2, 3)))
+        data[121:127] = name.encode('ascii', 'ignore').ljust(6)[:6]
 
         data[127] = 0  # Reserved byte
         return DX7Voice(data)
