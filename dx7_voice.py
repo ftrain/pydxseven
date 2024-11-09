@@ -214,8 +214,11 @@ class DX7Cartridge:
             header = bytes.fromhex('F043000920000000')
             f.write(header)
             # Write the cartridge data without the header and footer
-            f.write(self.to_bytes())
-            footer = bytes.fromhex('F7')
-            f.write(footer)
+            cartridge_data = self.to_bytes()
+            f.write(cartridge_data)
+            # Calculate and write the checksum
+            checksum = (~sum(cartridge_data) + 1) & 0x7F
+            f.write(bytes([checksum]))
+            # Write the footer
             footer = bytes.fromhex('F7')
             f.write(footer)
