@@ -1,8 +1,8 @@
 import os
+import sys
 from dx7_voice import DX7Cartridge
 
-def test_dx7_cartridge():
-    original_file = 'original_cartridge.syx'
+def test_cartridge(original_file):
     new_file = 'new_cartridge.syx'
 
     # Read the original cartridge
@@ -21,5 +21,8 @@ def test_dx7_cartridge():
     os.remove(new_file)
 
 if __name__ == "__main__":
-    test_dx7_cartridge()
+    if len(sys.argv) != 2:
+        print("Usage: python test_dx7_cartridge.py <cartridge_file>")
+        sys.exit(1)
+    test_cartridge(sys.argv[1])
     print("Test passed!")
