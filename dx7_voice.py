@@ -1,4 +1,6 @@
 import struct
+import random
+import string
 
 class DX7Voice:
     def __init__(self, data):
@@ -61,7 +63,38 @@ class DX7Voice:
             raise ValueError("Voice data must be 128 bytes long")
         self.data = data
 
-    def to_bytes(self):
+    @staticmethod
+    def random_voice():
+        data = bytearray(128)
+        for i in range(6):
+            offset = i * 17
+            for j in range(17):
+                data[offset + j] = random.randint(0, 99)
+        
+        # Randomize pitch EG
+        for i in range(102, 110):
+            data[i] = random.randint(0, 99)
+        
+        # Randomize other parameters
+        data[110] = random.randint(0, 31)  # Algorithm
+        data[111] = random.randint(0, 7)   # Feedback
+        data[112] = random.randint(0, 1)   # Oscillator Sync
+        data[113] = random.randint(0, 99)  # LFO Speed
+        data[114] = random.randint(0, 99)  # LFO Delay
+        data[115] = random.randint(0, 99)  # LFO Pitch Mod Depth
+        data[116] = random.randint(0, 99)  # LFO Amp Mod Depth
+        data[117] = random.randint(0, 1)   # LFO Sync
+        data[118] = random.randint(0, 5)   # LFO Waveform
+        data[119] = random.randint(0, 7)   # Pitch Mod Sensitivity
+        data[120] = random.randint(0, 48)  # Transpose
+        
+        # Randomize name
+        name = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+        data[121:127] = name.encode('ascii')
+        
+        data[127] = 0  # Reserved byte
+        
+        return DX7Voice(data)
         data = bytearray(128)
         
         # Pack operator data
@@ -139,6 +172,11 @@ class DX7Cartridge:
         self.voices = [DX7Voice(data[i:i+128]) for i in range(0, 4096, 128)]
 
     def to_bytes(self):
+
+    @staticmethod
+    def random_cartridge():
+        voices = [DX7Voice.random_voice() for _ in range(32)]
+        return DX7Cartridge(b''.join(voice.to_bytes() for voice in voices))
         return b''.join(voice.to_bytes() for voice in self.voices)
 
     @staticmethod
