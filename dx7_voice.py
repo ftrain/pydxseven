@@ -95,8 +95,9 @@ class DX7Voice:
         data[127] = 0  # Reserved byte
         
         return DX7Voice(data)
+    def to_bytes(self):
         data = bytearray(128)
-        
+
         # Pack operator data
         for i, operator in enumerate(self.operators):
             offset = i * 17
@@ -119,7 +120,7 @@ class DX7Voice:
                 operator['key_velocity_sensitivity'],
                 operator['operator_output_level'],
             ]
-        
+
         # Pack pitch EG
         data[102:110] = [
             self.pitch_eg['rate1'],
@@ -131,7 +132,7 @@ class DX7Voice:
             self.pitch_eg['level3'],
             self.pitch_eg['level4'],
         ]
-        
+
         # Pack other voice parameters
         data[110] = self.algorithm
         data[111] = self.feedback
@@ -146,7 +147,7 @@ class DX7Voice:
         data[120] = self.transpose
         data[121:127] = self.name.encode('ascii').ljust(6)
         data[127] = self.reserved
-        
+
         return bytes(data)
 
     def pretty_print(self):
@@ -178,7 +179,6 @@ class DX7Cartridge:
     def random_cartridge():
         voices = [DX7Voice.random_voice() for _ in range(32)]
         return DX7Cartridge(b''.join(voice.to_bytes() for voice in voices))
-        return b''.join(voice.to_bytes() for voice in self.voices)
 
     @staticmethod
     def from_file(filename):
