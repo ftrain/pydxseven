@@ -7,10 +7,14 @@ def compare_files(file1, file2):
 
     if len(data1) != len(data2):
         print(f"Files differ in size: {len(data1)} vs {len(data2)} bytes")
-        return
+        min_length = min(len(data1), len(data2))
+    else:
+        min_length = len(data1)
 
     differences = []
-    for i, (byte1, byte2) in enumerate(zip(data1, data2)):
+    for i in range(min_length):
+        byte1 = data1[i]
+        byte2 = data2[i]
         if byte1 != byte2:
             differences.append((i, byte1, byte2))
 
@@ -19,7 +23,13 @@ def compare_files(file1, file2):
     else:
         print(f"Found {len(differences)} differences:")
         for index, byte1, byte2 in differences:
-            print(f"Byte {index}: {byte1} != {byte2}")
+            print(f"Byte {index}: {byte1:02X} != {byte2:02X}")
+
+    if len(data1) != len(data2):
+        print("Additional bytes in the longer file:")
+        longer_data = data1 if len(data1) > len(data2) else data2
+        for i in range(min_length, len(longer_data)):
+            print(f"Byte {i}: {longer_data[i]:02X}")
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
