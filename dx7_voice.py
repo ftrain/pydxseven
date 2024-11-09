@@ -66,38 +66,47 @@ class DX7Voice:
     @staticmethod
     def random_voice():
         data = bytearray(128)
+
+        # Define sound types with specific parameter ranges
+        sound_types = {
+            "Bass": {"algorithm": (0, 7), "feedback": (0, 3), "lfo_speed": (20, 40)},
+            "Pluck": {"algorithm": (8, 15), "feedback": (4, 7), "lfo_speed": (40, 60)},
+            "Brass": {"algorithm": (16, 23), "feedback": (2, 5), "lfo_speed": (60, 80)},
+            "Piano": {"algorithm": (24, 31), "feedback": (0, 2), "lfo_speed": (80, 99)},
+        }
+
+        # Choose a random sound type
+        sound_type = random.choice(list(sound_types.keys()))
+        params = sound_types[sound_type]
+
+        # Set operator parameters
         for i in range(6):
             offset = i * 17
             for j in range(17):
                 data[offset + j] = random.randint(0, 99)
-        
-        # Randomize pitch EG
+
+        # Set pitch EG
         for i in range(102, 110):
             data[i] = random.randint(0, 99)
-        
-        # Randomize other parameters
-        data[110] = random.randint(0, 31)  # Algorithm
-        data[111] = random.randint(0, 7)   # Feedback
-        data[112] = random.randint(0, 1)   # Oscillator Sync
-        data[113] = random.randint(0, 99)  # LFO Speed
-        data[114] = random.randint(0, 99)  # LFO Delay
-        data[115] = random.randint(0, 99)  # LFO Pitch Mod Depth
-        data[116] = random.randint(0, 99)  # LFO Amp Mod Depth
-        data[117] = random.randint(0, 1)   # LFO Sync
-        data[118] = random.randint(0, 5)   # LFO Waveform
-        data[119] = random.randint(0, 7)   # Pitch Mod Sensitivity
-        data[120] = random.randint(0, 48)  # Transpose
-        
-        # Randomize name from a list of words
-        words = [
-            "Bass", "Pluck", "Brass", "Piano", "Synth", "Lead", "Pad", "Chime",
-            "Bell", "String", "Flute", "Horn", "Vibe", "Keys", "Organ", "Wave"
-        ]
-        name = ''.join(random.choices(words, k=1))
+
+        # Set other parameters based on sound type
+        data[110] = random.randint(*params["algorithm"])  # Algorithm
+        data[111] = random.randint(*params["feedback"])   # Feedback
+        data[112] = random.randint(0, 1)                  # Oscillator Sync
+        data[113] = random.randint(*params["lfo_speed"])  # LFO Speed
+        data[114] = random.randint(0, 99)                 # LFO Delay
+        data[115] = random.randint(0, 99)                 # LFO Pitch Mod Depth
+        data[116] = random.randint(0, 99)                 # LFO Amp Mod Depth
+        data[117] = random.randint(0, 1)                  # LFO Sync
+        data[118] = random.randint(0, 5)                  # LFO Waveform
+        data[119] = random.randint(0, 7)                  # Pitch Mod Sensitivity
+        data[120] = random.randint(0, 48)                 # Transpose
+
+        # Set name based on sound type
+        name = sound_type
         data[121:127] = name.encode('ascii').ljust(6)[:6]
-        
+
         data[127] = 0  # Reserved byte
-        
         return DX7Voice(data)
     def to_bytes(self):
         data = bytearray(128)
