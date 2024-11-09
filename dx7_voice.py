@@ -192,7 +192,7 @@ class DX7Cartridge:
             raise ValueError("Cartridge data must be at least 4092 bytes long")
 
         # Skip the header and footer
-        self.voices = [DX7Voice(data[i:i+128]) for i in range(8, 4096 + 8, 128)]
+        self.voices = [DX7Voice(data[i:i+128]) for i in range(8, 8 + 32 * 128, 128)]
 
     def to_bytes(self):
         return b''.join(voice.to_bytes() for voice in self.voices)
