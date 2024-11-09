@@ -210,7 +210,8 @@ class DX7Cartridge:
     def to_file(self, filename):
         with open(filename, 'wb') as f:
             # Write the cartridge data with the correct header and format
-            header = b'F0 43 00 09 20 00 00 00'
+            header = bytes.fromhex('F043000920000000')
             f.write(header)
             f.write(self.to_bytes())
-            f.write(b'F7')
+            footer = bytes.fromhex('F7')
+            f.write(footer)
