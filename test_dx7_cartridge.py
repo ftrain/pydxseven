@@ -8,7 +8,11 @@ def test_cartridge(original_file):
     # Read the original cartridge
     original_cartridge = DX7Cartridge.from_file(original_file)
 
-    # Validate the cartridge
+    # Check for the SysEx header
+    expected_header = b'F0 43 00 09 20 00 00 00'
+    with open(original_file, 'rb') as f:
+        header = f.read(len(expected_header))
+    assert header == expected_header, "Cartridge file does not start with the expected SysEx header"
     assert len(original_cartridge.voices) == 32, "Cartridge must contain 32 voices"
     for i, voice in enumerate(original_cartridge.voices, start=1):
         assert len(voice.to_bytes()) == 128, f"Voice {i} data must be 128 bytes long"
