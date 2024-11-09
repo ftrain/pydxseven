@@ -103,7 +103,12 @@ class DX7Voice:
         data[120] = random.randint(0, 48)                 # Transpose
 
         # Generate a random and silly name
-        words = ["Fuzzy", "Bouncy", "Wobble", "Quirky", "Zappy", "Snappy", "Giggly", "Wiggly", "Jumpy", "Funky"]
+        words = [
+            "Fuzzy", "Bouncy", "Wobble", "Quirky", "Zappy", "Snappy", "Giggly", "Wiggly", "Jumpy", "Funky",
+            "Zany", "Whacky", "Loopy", "Zippy", "Bubbly", "Silly", "Goofy", "Dizzy", "Wacky", "Jazzy",
+            "Spunky", "Peppy", "Sparky", "Zesty", "Breezy", "Cheery", "Perky", "Chirpy", "Frisky", "Lively",
+            "Sprightly", "Vibrant", "Vivacious", "Whimsical", "Playful", "Merry", "Jolly", "Sunny", "Radiant", "Gleeful"
+        ]
         name = " ".join(random.sample(words, random.randint(2, 3)))
         data[121:127] = name.encode('ascii', 'ignore').ljust(6)[:6]
 
