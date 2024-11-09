@@ -172,6 +172,7 @@ class DX7Cartridge:
         self.voices = [DX7Voice(data[i:i+128]) for i in range(0, 4096, 128)]
 
     def to_bytes(self):
+        return b''.join(voice.to_bytes() for voice in self.voices)
 
     @staticmethod
     def random_cartridge():
