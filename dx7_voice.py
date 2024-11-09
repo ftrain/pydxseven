@@ -187,9 +187,12 @@ class DX7Voice:
 
 class DX7Cartridge:
     def __init__(self, data):
-        if len(data) != 4096:
-            raise ValueError("Cartridge data must be 4096 bytes long")
-        self.voices = [DX7Voice(data[i:i+128]) for i in range(0, 4096, 128)]
+        # Ensure the data is at least 4096 bytes long (header + voices + footer)
+        if len(data) < 4104:
+            raise ValueError("Cartridge data must be at least 4104 bytes long")
+
+        # Skip the header and footer
+        self.voices = [DX7Voice(data[i:i+128]) for i in range(8, 4096 + 8, 128)]
 
     def to_bytes(self):
         return b''.join(voice.to_bytes() for voice in self.voices)
@@ -203,15 +206,16 @@ class DX7Cartridge:
     def from_file(filename):
         with open(filename, 'rb') as f:
             data = f.read()
-        if len(data) < 4096:
-            raise ValueError(f"File '{filename}' is {len(data)} bytes long, but it must be at least 4096 bytes long")
-        return DX7Cartridge(data[:4096])
+        return DX7Cartridge(data)
 
     def to_file(self, filename):
         with open(filename, 'wb') as f:
             # Write the cartridge data with the correct header and format
             header = bytes.fromhex('F043000920000000')
             f.write(header)
+            # Write the cartridge data without the header and footer
             f.write(self.to_bytes())
+            footer = bytes.fromhex('F7')
+            f.write(footer)
             footer = bytes.fromhex('F7')
             f.write(footer)
