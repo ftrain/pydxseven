@@ -88,9 +88,13 @@ class DX7Voice:
         data[119] = random.randint(0, 7)   # Pitch Mod Sensitivity
         data[120] = random.randint(0, 48)  # Transpose
         
-        # Randomize name
-        name = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
-        data[121:127] = name.encode('ascii')
+        # Randomize name from a list of words
+        words = [
+            "Bass", "Pluck", "Brass", "Piano", "Synth", "Lead", "Pad", "Chime",
+            "Bell", "String", "Flute", "Horn", "Vibe", "Keys", "Organ", "Wave"
+        ]
+        name = ''.join(random.choices(words, k=1))
+        data[121:127] = name.encode('ascii').ljust(6)[:6]
         
         data[127] = 0  # Reserved byte
         
